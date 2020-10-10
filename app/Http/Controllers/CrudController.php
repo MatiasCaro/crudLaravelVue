@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File as File_;
+
 use App\TableCrudUser;
+use App\User;
+use App\File;
+use Auth;
 
 class CrudController extends Controller
 {
@@ -14,7 +20,7 @@ class CrudController extends Controller
      */
     public function index()
     {
-        return TableCrudUser::get();
+        return User::get();
     }
 
     /**
@@ -35,20 +41,15 @@ class CrudController extends Controller
      */
     public function store(Request $request)
     {
-        $crud = new TableCrudUser();
-        $crud->rut = $request->rut;
-        $crud->nombre = $request->nombre;
-        $crud->f_naci = $request->f_naci;
-        $crud->genero = $request->genero;
-        $crud->email = $request->email;
-        $crud->fono = $request->fono;
-        $crud->direccion = $request->direccion;
-        $crud->region = $request->region;
-        $crud->comuna = $request->comuna;
+        $password_encrypt = Hash::make($request->password);
+        $user = new User();
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->password = $password_encrypt;
 
-        $crud->save();
+        $user->save();
 
-        return $crud;
+        return $user;
     }
 
     /**
@@ -82,17 +83,14 @@ class CrudController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $crud = TableCrudUser::find($id);
-        $crud->genero = $request->genero;
-        $crud->email = $request->email;
-        $crud->fono = $request->fono;
-        $crud->direccion = $request->direccion;
-        $crud->region = $request->region;
-        $crud->comuna = $request->comuna;
+        $user = User::find($id);
+        $user->email = $request->email;
+        $user->name = $request->name;
 
-        $crud->save();
 
-        return $crud;
+        $user->save();
+
+        return $user;
     }
 
     /**
@@ -103,8 +101,46 @@ class CrudController extends Controller
      */
     public function destroy($id)
     {
-        $crud = TableCrudUser::find($id);
+        $user = User::find($id);
 
-        $crud->delete();
+        $user->delete();
+    }
+
+    public function uplodadFile(Request $request)
+    {
+        $fileName = date('Y-m-d-H:h:m').$request->file->getClientOriginalName();
+        $request->file->move(public_path('files'), $fileName);
+
+        $file = new File();
+        $file->path_file = $fileName;
+        $file->user_id = Auth::user()->id;
+
+        $file->save();
+
+        return $file;
+    }
+
+    public function getFiles(){
+        $file = File::select('files.id','files.path_file','users.name')
+        ->join('users','users.id','=','files.user_id')->get();
+
+        return $file;
+    }
+
+    public function deleteFile($id){
+        $file = File::find($id);
+        $file_name = $file->path_file;
+        File_::delete('files/'.$file_name); // Comentar esta linea de código en caso de que
+        // no se quiera eliminar el archivo del proyecto.
+        $file->delete();
+    }
+
+    public function editUserFile(Request $request){
+        $file = File::find($request->id);
+        $file->user_id = $request->user_id;
+
+        $file->save();
+
+        return $file;
     }
 }

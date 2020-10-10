@@ -7,7 +7,9 @@
 require('./bootstrap');
 
 import { ClientTable } from "vue-tables-2";
-import { rutValidator, rutFilter, rutInputDirective } from 'vue-dni';
+import { rutFilter, rutInputDirective } from 'vue-dni';
+import vSelect from 'vue-select';
+import 'vue-select/dist/vue-select.css';
 
 
 
@@ -24,6 +26,7 @@ Vue.use(ClientTable,{
     }
 });
 Vue.filter('rutFilter', rutFilter);
+Vue.component('v-select', vSelect)
 Vue.directive('rut', rutInputDirective);
 
 /**

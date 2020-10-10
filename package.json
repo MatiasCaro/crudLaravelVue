@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "vue-dni": "^1.0.1",
+        "vue-select": "^3.10.8",
         "vue-tables-2": "^2.1.41"
     }
 }
